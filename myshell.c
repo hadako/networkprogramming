@@ -54,13 +54,13 @@ void pipecmd(char *argv[],int i){
 		}
 		else if(pid2==0){
 			dup2(fds[1],1);
-			execvp(argv[0],argv);
 			close(fds[1]);
+			execvp(argv[1],&argv[i+1]);
 		}
 		else{
 			dup2(fds[0],0);
-			execvp(argv[i+1],&argv[i+1]);
 			close(fds[0]);
+			execvp(argv[0],argv);
 		}
 	}
 	while (wait(&status)!=pid1);
@@ -82,8 +82,7 @@ void execute (char *argv[]){
     }else if(pid==0){ //子プロセスの動き
         execvp(cmd,argv);
         printf("%s command error\n",argv[0]);
-        exit(1);
-    
+        exit(1);   
     }
     //親プロセスの動き
     else {
