@@ -36,48 +36,35 @@ void cd(int argc, char *path){
     }
 }
 
-/*
 void pipecmd(char *argv[],int i){
-	int fd[2];
 	int pid1,pid2,status;
+	int fds[2];
 
-
-	pipe(fd); //パイプ作成
-	pid1=fork();
+	pid1=fork(); //子プロセス
 	if(pid1<0){
-		printf("fork error\n");
-        exit(1);
-	}else if(pid1==0){ //Kind(一つ目のコマンド)
-		dup2(fd[1],1); //
-		close(fd[1]);
-		execvp(argv[0],argv);	
-		fprintf(stderr,"erorr");
-		close(fd[0]);
+		printf("prosess1 fork error\n");
 		exit(1);
-	}else{
-		close(fd[1]);
-		wait(&status);
-		if(status!=0){
-			close(fd[0]);
-		}
-		pid2=fork(); //もう一回フォーク
+	}
+	else if(pid1==0){
+		pipe(fds);
+		pid2=fork(); //孫プロセス
 		if(pid2<0){
-			printf("fork error\n");
-       		exit(1);
-		}else if(pid2==0){ //Kind(２つ目のコマンド)
-			dup2(fd[0],0);
-			close(fd[0]);
-			execvp(argv[i+1],&argv[i+1]);
-			fprintf(stderr,"erorr");
+			printf("prosess2 fork error\n");
 			exit(1);
-		}else{
-			close(fd[0]);
-			wait(&status);
+		}
+		else if(pid2==0){
+			dup2(fds[1],1);
+			execvp(argv[0],argv);
+			close(fds[1]);
+		}
+		else{
+			dup2(fds[0],0);
+			execvp(argv[i+1],&argv[i+1]);
+			close(fds[0]);
 		}
 	}
-
+	while (wait(&status)!=pid1);
 }
-*/
 
 
     /*外部*/
@@ -117,9 +104,7 @@ int main(){
         argc=parse(line,argv);
         if (argc>0){
         	for(i=0;i<argc;i++){
-        		printf("pass:%d\n",__LINE__);
         		if(strcmp(argv[i],"|")==0){
-        			printf("pass:%d\n",__LINE__);
         			argv[i]=NULL;
         			pipe=1;
         			break;
@@ -127,13 +112,11 @@ int main(){
         	}
         	//pipeがない
         	if(pipe==0){
-        		printf("pass:%d\n",__LINE__);
          	    if(strcmp(argv[0],"cd")==0) cd(argc, argv[1]); //cd
         	    else if(strcmp(argv[0],"exit")==0) exit(1); //exit
         	    else execute(argv);//組み込み以外
-        	}else {
-        		execute(argv);
-        		execute(&argv[i+1]);
+        	}else { //パイプあり
+        		pipecmd(argv,i);
         	}
         }
     }
