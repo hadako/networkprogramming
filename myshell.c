@@ -36,13 +36,11 @@ void cd(int argc, char *path){
     }
 }
 
+/*
 void pipecmd(char *argv[],int i){
 	int fd[2];
 	int pid1,pid2,status;
-	char *cmd1,*cmd2;
 
-	cmd1=argv[i];
-	cmd2=argv[i+1];
 
 	pipe(fd); //パイプ作成
 	pid1=fork();
@@ -52,7 +50,7 @@ void pipecmd(char *argv[],int i){
 	}else if(pid1==0){ //Kind(一つ目のコマンド)
 		dup2(fd[1],1); //
 		close(fd[1]);
-		execvp(cmd1,argv);	
+		execvp(argv[0],argv);	
 		fprintf(stderr,"erorr");
 		close(fd[0]);
 		exit(1);
@@ -69,7 +67,7 @@ void pipecmd(char *argv[],int i){
 		}else if(pid2==0){ //Kind(２つ目のコマンド)
 			dup2(fd[0],0);
 			close(fd[0]);
-			execvp(cmd2,&argv[i+1]);
+			execvp(argv[i+1],&argv[i+1]);
 			fprintf(stderr,"erorr");
 			exit(1);
 		}else{
@@ -79,6 +77,7 @@ void pipecmd(char *argv[],int i){
 	}
 
 }
+*/
 
 
     /*外部*/
@@ -133,7 +132,8 @@ int main(){
         	    else if(strcmp(argv[0],"exit")==0) exit(1); //exit
         	    else execute(argv);//組み込み以外
         	}else {
-        		pipecmd(argv,i);
+        		execute(argv);
+        		execute(&argv[i+1]);
         	}
         }
     }
