@@ -50,7 +50,7 @@ void pipecmd(char *argv[],int i){
 		printf("fork error\n");
         exit(1);
 	}else if(pid1==0){ //Kind(一つ目のコマンド)
-		dup2(fd[1],1);
+		dup2(fd[1],1); //
 		close(fd[1]);
 		execvp(cmd1,argv);	
 		fprintf(stderr,"erorr");
@@ -61,7 +61,6 @@ void pipecmd(char *argv[],int i){
 		wait(&status);
 		if(status!=0){
 			close(fd[0]);
-			continue;
 		}
 		pid2=fork(); //もう一回フォーク
 		if(pid2<0){
@@ -90,7 +89,6 @@ void execute (char *argv[]){
     
     cmd=argv[0];
     
-
     pid=fork();
     if(pid<0){
         printf("fork error\n");
@@ -109,11 +107,10 @@ void execute (char *argv[]){
 }
 
 int main(){
-    char line[512]; //入力されたコマンド　line=argv[]
+    char line[512]; //入力されたコマンド　
     char *argv[16],*cmd;
     int argc,i,pipe=0;
     
-    cmd=argv[0];
     
     for (;;){
         printf("#");
@@ -121,7 +118,9 @@ int main(){
         argc=parse(line,argv);
         if (argc>0){
         	for(i=0;i<argc;i++){
+        		printf("pass:%d\n",__LINE__);
         		if(strcmp(argv[i],"|")==0){
+        			printf("pass:%d\n",__LINE__);
         			argv[i]=NULL;
         			pipe=1;
         			break;
@@ -129,9 +128,10 @@ int main(){
         	}
         	//pipeがない
         	if(pipe==0){
-         	   if(strcmp(cmd,"cd")==0) cd(argc, argv[1]); //cd
-        	    else if(strcmp(cmd,"exit")==0) exit(1); //exit
-        	    else execute(argv); //組み込み以外
+        		printf("pass:%d\n",__LINE__);
+         	    if(strcmp(argv[0],"cd")==0) cd(argc, argv[1]); //cd
+        	    else if(strcmp(argv[0],"exit")==0) exit(1); //exit
+        	    else execute(argv);//組み込み以外
         	}else {
         		pipecmd(argv,i);
         	}
